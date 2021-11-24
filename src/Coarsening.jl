@@ -1,0 +1,3 @@
+module Coarsening
+
+end # module
