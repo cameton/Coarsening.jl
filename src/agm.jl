@@ -77,6 +77,18 @@ function formcoarseop(Adj, C, N)
     return sparse(Pi, Pj, Pv, m, n)
 end
 
+function fixadjacency(A)
+    for i in 1:size(A, 1)
+        A[i, i] = 0
+    end
+end
+
+function fixlaplacian(L)
+    for i in 1:size(L, 1)
+        A[i, i] = sum(A[i, :]) - A[i, i]
+    end
+end
+
 function coarseapprox(Adj, P)
     c = size(P, 2)
     cAdji::Vector{Int} = []
