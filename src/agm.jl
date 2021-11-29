@@ -64,7 +64,7 @@ function formcoarseop(Adj, C, N)
             if i in C
                 if C[j] == i
                     push!(Pi, i)
-                    push!(Pj, i)
+                    push!(Pj, j)
                     push!(Pv, 1)
                 end
             elseif C[j] in N[i]
