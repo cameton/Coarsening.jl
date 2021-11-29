@@ -20,6 +20,7 @@ function coarsenodes(Adj, vweights; Q, η)
         push!(C, idx)
         idx += 1
     end
+    println(idx)
     for i in (idx):(length(vol))
         if sum(Adj[i, C]) / esum[i] <= Q
             append!(C, i)
