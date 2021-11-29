@@ -62,15 +62,15 @@ function formcoarseop(Adj, C, N)
     for j in 1:length(C)
         for i in 1:size(Adj, 1)
             if i in C
-                if j == i
+                if C[j] == i
                     push!(Pi, i)
                     push!(Pj, i)
                     push!(Pv, 1)
                 end
-            elseif j in N[i]
+            elseif C[j] in N[i]
                 push!(Pi, i)
                 push!(Pj, j)
-                push!(Pv, Adj[i, j] / sum(Adj[i, N[i]]))
+                push!(Pv, Adj[i, C[j]] / sum(Adj[i, N[i]]))
             end
         end
     end
