@@ -82,7 +82,7 @@ function formcoarseop!(Pi, Pj, Pv, Adj, C, N)
     for i in 1:length(C)
         if C[i] > 0
             idx += 1
-            Pi[idx] = C[i]
+            Pi[idx] = i
             Pj[idx] = C[i]
             Pv[idx] = 1.0
         else
