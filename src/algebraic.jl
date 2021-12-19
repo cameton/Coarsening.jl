@@ -1,0 +1,2 @@
+
+struct AlgebraicCoarsening <: AbstractCoarsening end
