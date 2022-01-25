@@ -129,6 +129,6 @@ function coarsen(Adj, volume; Q, η, r)
     N = coarseneighborhoods(Adj, C, Csize; r=r)
     P = formcoarseop(Adj, C, N, Csize)
     Ac = fixadjacency(P' * (Adj * P))
-    return Ac, P' * volume, (C, Csize)
+    return Ac, P' * volume, P
 end
 
