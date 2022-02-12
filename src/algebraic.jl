@@ -19,7 +19,7 @@ function coarse_neighborhoods(W, C, F, order)
         idx_range = nzrange(W, c)
         idx = first(idx_range)
         idxf = 1
-        while idxf <= length(f) && idx <= last(idx_range)
+        while idxf <= length(F) && idx <= last(idx_range)
             row = rows[idx]
             val = vals[idx]
             if F[idxf] > rows[idx]
