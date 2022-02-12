@@ -1,15 +1,5 @@
 order(crs::AbstractAlgebraicCoarsening) = crs.order
 
-function _get_next_idx(f, idx, max_idx, rows)
-    while idx <= max_idx
-        if f <= rows[idx]
-            return idx, true
-        end
-        idx += 1
-    end
-    return idx, false
-end
-
 function _add_to_neighborhood!(N, k, v, maxsize)
     push!(N, (k, v)) # TODO Smarter implementation
     if length(N) > maxsize
@@ -19,7 +9,6 @@ function _add_to_neighborhood!(N, k, v, maxsize)
     return nothing
 end
 
-# TODO Make this less convoluted
 function coarse_neighborhoods(W, C, F, order)
     nf = length(F)
     # TODO Other strategies for sparsifying neighborhood?
@@ -29,16 +18,17 @@ function coarse_neighborhoods(W, C, F, order)
     for (j, c) in enumerate(C)
         idx_range = nzrange(W, c)
         idx = first(idx_range)
-        for (i, f) in enumerate(F)
-            idx, ok = _get_next_idx(f, idx, last(idx_range), rows)
-            if !ok
-                break
-            end
+        idxf = 1
+        while idxf <= length(f) && idx <= last(idx_range)
             row = rows[idx]
             val = vals[idx]
-            if f == row
-                _add_to_neighborhood!(N[i], val, j, order)
+            if F[idxf] > rows[idx]
                 idx += 1
+            else
+                if F[idxf] == rows[idx]
+                    _add_to_neighborhood!(N[idxf], val, j, order)
+                end
+                idxf += 1
             end
         end
     end
