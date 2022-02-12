@@ -46,6 +46,7 @@ end
 function coarseop(vc::VolumeCoarsening, A; volume, strength, _...)
     C, F = split(vc, strength, volume)
     N = coarse_neighborhoods(strength, C, F, vc.order)
+    println(F)
     P = formcoarseop(vc, C, F, N)
     return P, C, F
 end
