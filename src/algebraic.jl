@@ -9,26 +9,21 @@ function _add_to_neighborhood!(N, k, v, maxsize)
     return nothing
 end
 
-function coarse_neighborhoods(W, C, F, order)
-    nf = length(F)
+function coarse_neighborhoods(W, C, invseed, order)
+    nc = length(C)
+    nf = length(invseed) - length(C)
     # TODO Other strategies for sparsifying neighborhood?
     N = [Vector{Tuple{Float64, Int}}() for i in 1:nf]
     rows = rowvals(W)
     vals = nonzeros(W)
+
     for (j, c) in enumerate(C)
-        idx_range = nzrange(W, c)
-        idx = first(idx_range)
-        idxf = 1
-        while idxf <= length(F) && idx <= last(idx_range)
+        for idx in nzrange(W, c)
             row = rows[idx]
             val = vals[idx]
-            if F[idxf] > rows[idx]
-                idx += 1
-            else
-                if F[idxf] == rows[idx]
-                    _add_to_neighborhood!(N[idxf], val, j, order)
-                end
-                idxf += 1
+            if val != 0 && invseed[row] > nc
+                idxf = invseed[row] - nc
+                _add_to_neighborhood!(N[idxf], val, j, order)
             end
         end
     end
@@ -48,11 +43,11 @@ end
 
 function _fillcoarseop_fine!(Pi, Pj, Pv, F, N, idx)
     for (i, f) in enumerate(F)
-        total = sum(keys(N[i]))
-        for (w, coarse) in N[i]
+        total = sum(x -> x[1], N[i])
+        for (w, c) in N[i]
             idx += 1
             Pi[idx] = f
-            Pj[idx] = coarse
+            Pj[idx] = c
             Pv[idx] = w / total
         end
     end
@@ -77,16 +72,24 @@ function formcoarseop(crs::AbstractAlgebraicCoarsening, C, F, N)
     return sparse(Pi, Pj, Pv, nc + nf, nc)
 end
 
-function fix_adjacency(A)
+function fix_adjacency!(A)
     for i in 1:size(A, 1)
         A[i, i] = 0
     end
     return A
 end
 
-function fix_laplacian(L)
-    for i in 1:size(L, 1)
-        L[i, i] = sum(L[i, :]) - L[i, i]
+function fix_laplacian!(L)
+    rows = rowvals(L)
+    vals = nonzeros(L)
+    for c in axes(L, 2)
+        acc = 0
+        for idx in nzrange(L, c)
+            if rows[idx] != c
+                acc -= vals[idx]
+            end
+        end
+        L[c, c] = acc
     end
     return L
 end

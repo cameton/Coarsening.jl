@@ -13,7 +13,7 @@ include("./volumecoarsening.jl")
 export VolumeCoarsening
 
 export coarsen,
-       fix_adjacency,
-       fix_laplacian
+       fix_adjacency!,
+       fix_laplacian!
 
 end # module

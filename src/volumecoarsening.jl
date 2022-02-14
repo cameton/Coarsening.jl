@@ -5,29 +5,57 @@ struct VolumeCoarsening <: AbstractAlgebraicCoarsening
     order::Int
 end
 
+# TODO maybe reuse order vec from choose_seeds to save space
 function split(vc::VolumeCoarsening, W, volume)
+    isseed, vol_order = _choose_seeds(vc, W, volume)
+    nc = count(isseed)
+    nf = length(isseed) - nc
+
+    C = zeros(Int, nc)
+    F = zeros(Int, nf)
+    invseed = vol_order
+
+    idxc = 0
+    idxf = 0
+    for (i, t) in enumerate(isseed)
+        if t
+            idxc += 1
+            C[idxc] = i
+            invseed[i] = idxc
+        else
+            idxf += 1
+            F[idxf] = i
+            invseed[i] = idxf + nc
+        end
+    end
+
+    # invseed equivalent to invperm([C; F])
+    return C, F, invseed
+end
+
+# TODO verify this is working correctly
+function _choose_seeds(vc::VolumeCoarsening, W, volume)
     n = size(W, 1)
-    seed_mask = falses(n)
+    isseed = falses(n)
     coarse_connection = zeros(n)
     total_strength = sumrows(W)
     fvolume = futurevolume(W, volume, total_strength)
     mean_volume = sum(fvolume) / length(fvolume)
-    vol_order = sortperm(fvolume)
+    vol_order = sortperm(fvolume; rev=true)
 
     for col in vol_order
         isabovemean = fvolume[col] > mean_volume * vc.η
         wellconnected = coarse_connection[col] / total_strength[col] > vc.Q
         if isabovemean || !wellconnected
-            seed_mask[col] = true
+            isseed[col] = true
             addcol!(coarse_connection, W, col)
         end
     end
-    return findall(seed_mask), findall(x -> !x, seed_mask), seed_mask
+    return isseed, vol_order
 end
 
 ""
 function futurevolume(W, volume, total_strength)
-    n = size(volume, 1)
     future = copy(volume)
     rows = rowvals(W)
     vals = nonzeros(W)
@@ -35,19 +63,21 @@ function futurevolume(W, volume, total_strength)
         for i in nzrange(W, j)
             row = rows[i]
             val = vals[i]
-            if val != 0
-                future[j] += volume[row] * val / total_strength[row]
-            end
+            future[j] += volume[row] * val / total_strength[row]
         end
     end
     return future
 end
 
 function coarseop(vc::VolumeCoarsening, A; volume, strength, _...)
-    C, F = split(vc, strength, volume)
-    N = coarse_neighborhoods(strength, C, F, vc.order)
-    println(F)
-    P = formcoarseop(vc, C, F, N)
+    C, F, invseed = split(vc, strength, volume)
+    if length(F) > 0
+        N = coarse_neighborhoods(strength, C, invseed, order(vc))
+        P = formcoarseop(vc, C, F, N)
+    else
+        n = length(C)
+        P = sparse(I, n, n)
+    end
     return P, C, F
 end
 
