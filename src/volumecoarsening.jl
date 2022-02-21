@@ -70,7 +70,7 @@ function futurevolume(W, volume, total_strength)
 end
 
 function coarseop(vc::VolumeCoarsening, A; volume, strength, order, _...)
-    C, F, invseed = split(vc, strength, volume)
+    C, F, invseed = split(vc, strength, volume, order)
     if length(F) > 0
         N = coarse_neighborhoods(strength, C, invseed, order(vc))
         P = formcoarseop(vc, C, F, N)
