@@ -1,4 +1,4 @@
-order(crs::AbstractAlgebraicCoarsening) = crs.order
+interpolation_order(crs::AbstractAlgebraicCoarsening) = crs.order
 
 function _add_to_neighborhood!(N, k, v, maxsize)
     push!(N, (k, v)) # TODO Smarter implementation
